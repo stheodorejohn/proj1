@@ -1,0 +1,166 @@
+body {
+	background: #e6e6e6;
+}
+
+nav ul {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	background-color: #010e80;
+	display: table;
+	width: 100%;
+}
+
+nav li {
+	display: table-cell
+}
+
+li a {
+	display: block;
+	color: white;
+	text-align: center;
+	padding: 30px 30px;
+	text-decoration: none;
+}
+
+li a:hover {
+	background-color: #111;
+}
+
+h2 a {
+	padding: 33px 25px;
+	color: white;
+	text-decoration: none;
+}
+
+h2 a:hover {
+	background-color: #111;
+}
+
+figcaption{
+  text-align:center;
+
+	font-size: 36px;
+  font-family:Brush Script MT, Brush Script Std;
+}
+
+header {
+	margin-left: 14px;
+}
+
+article {
+	text-align: justify;
+	margin: 15px;
+	max-width: 95%;
+	font-size: 25px;
+	line-height: 40px;
+font-family:Bradley Hand, cursive;
+}
+
+img {
+	width: 400px;
+	height: 300px;
+  position:relative;
+  right:28px;
+}
+
+aside {
+	left: 20px;
+	border: 1px solid black;
+	
+	max-width: 95%;
+	position: relative;
+	border-color: #010e80;
+	border-width: 5px;
+	font-size: 18px;
+}
+
+footer {
+	position: relative;
+	width: 100%;
+	bottom: -100px;
+	background-color: #010e80;
+}
+
+footer p {
+	color: white;
+	text-decoration: none;
+	padding: 10px;
+	text-align: center;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+footer a {
+	color: white;
+	text-decoration: none;
+	text-align: center;
+	width: 100%;
+}
+
+video {
+	display: block;
+	width: 1024px;
+	height: 750px;
+  padding:15px;
+}
+
+audio {
+	padding: 15px;
+	width: 98%;
+  box-sizing: border-box;
+}
+
+embed {
+	width: 400px;
+	height: 458px;
+  padding:15px;
+}
+
+<!--from codecademy  -->
+
+* {
+  box-sizing: border-box;
+}
+
+colorcity {
+  /*font-family: Helvetica, sans-serif;*/
+  height: 100px;
+  width: 100%;
+  position: fixed;
+  bottom: 0px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.footer {
+  /*font-family: Helvetica, sans-serif;*/
+  font-family:Brush Script MT, Brush Script Std, cursive;
+  height: 100px;
+  width: 100%;
+  position: fixed;
+  bottom: 0px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.button {
+  width: 150px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgb(32, 64, 86);
+  color: rgb(32, 64, 86);
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.button:hover {
+  cursor: pointer;
+  background-color: rgb(32, 64, 86);;
+  color: white;
+  transition: background-color 0.2s, color 0.2s;
+}
+

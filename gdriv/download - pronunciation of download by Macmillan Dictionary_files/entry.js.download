@@ -1,0 +1,190 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+$(function () {
+    $(".toggleable").each(function (_idx, toggleable) {
+        toggleable = $(toggleable);
+        var plusButton = toggleable.find(".toggle-open");
+        var minusButton = toggleable.find(".toggle-close");
+        var titleButton = toggleable.find(".toggle-toggle");
+
+        plusButton.click(function () {
+            toggleable.removeClass("closed");
+        });
+
+        minusButton.click(function () {
+            toggleable.addClass("closed");
+        });
+
+        titleButton.click(function () {
+            toggleable.toggleClass("closed");
+        });
+    });
+});
+$(function() {
+    var progressBar;
+    if (typeof progressParent == typeof undefined)
+        progressBar = $(".entry #progress-bar");
+    else
+        progressBar = $(progressParent + " #progress-bar");
+
+    if (progressBar.length < 1) return;
+
+    progressBar.removeClass("invisible");
+
+    var progressContent = $(".progress-content");
+    if (progressContent.length < 1) return;
+
+    var minScrollPosition = progressContent.offset().top;
+    var maxScrollPosition = progressContent.height();
+
+    function percentage() {
+        var currScrollPos = window.pageYOffset;
+        if (minScrollPosition > currScrollPos) return 0;
+
+        var denominator = maxScrollPosition - $(window).height();
+        if (denominator < 0) denominator = maxScrollPosition;
+
+        var result = (currScrollPos - minScrollPosition) / denominator;
+
+        if (result > 1) return 1;
+        if (result < 0) return 0;
+        return result;
+    }
+
+    function resizeProgressBar() {
+        var value = percentage();
+        if (value) {
+            progressBar.height("0.2em");
+            progressBar.width((percentage() * 100) + "%");
+        } else {
+            progressBar.height("0");
+            progressBar.width("0");
+        }
+    }
+
+    $(window).scroll(resizeProgressBar);
+
+    resizeProgressBar();
+});
+$(function () {
+    $(".load-more").click(function () {
+        var button = $(this);
+        var current = parseInt(button.data("current"));
+        var total = parseInt(button.data("total"));
+        var url = button.data("url");
+        var target = $(button.data("target"));
+
+        button.data("current", current + 1);
+
+        var finalUrl = url + (current + 1) + ".xml";
+        $.get(finalUrl, function (data) {
+            target.append(data);
+        });
+    });
+});
+$(function() {
+    var toggles = $('.facebook-toggle,.twitter-toggle');
+    var boxes = $('.facebook-box,.twitter-box');
+
+    toggles.click(function() {
+        toggles.toggleClass("selected");
+        boxes.toggleClass("invisible");
+    });
+});
+$(function () {
+    $(".card-items").each(function (_idx, cardItems) {
+        cardItems = $(cardItems);
+        if (cardItems.children().length < 2) return;
+
+        var moveToNextItem = function () {
+            var currentItem = cardItems.find(".current");
+            var nextItem = currentItem.next(".card-item");
+            if (!nextItem.length) nextItem = cardItems.children(".card-item:first");
+
+            nextItem.toggleClass("current");
+            nextItem.toggleClass("invisible");
+
+            currentItem.toggleClass("invisible");
+            currentItem.toggleClass("current");
+        };
+
+        var moveToPrevItem = function () {
+            var currentItem = cardItems.find(".current");
+            var prevItem = currentItem.prev(".card-item");
+            if (!prevItem.length) prevItem = cardItems.children(".card-item:last");
+
+            prevItem.toggleClass("current");
+            prevItem.toggleClass("invisible");
+
+            currentItem.toggleClass("invisible");
+            currentItem.toggleClass("current");
+        };
+
+        cardItems.siblings(".card-item-control.previous").click(moveToPrevItem);
+        cardItems.siblings(".card-item-control.next").click(moveToNextItem);
+    });
+});

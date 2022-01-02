@@ -1,0 +1,1019 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*!
+ * Cookie plugin
+ *
+ * Copyright (c) 2006 Klaus Hartl (stilbuero.de)
+ * Dual licensed under the MIT and GPL licenses:
+ * http://www.opensource.org/licenses/mit-license.php
+ * http://www.gnu.org/licenses/gpl.html
+ *
+ */
+jQuery.cookie=function(name,value,options){if(typeof value!='undefined'){options=options||{};if(value===null){value='';options.expires=-1;}var expires='';if(options.expires&&(typeof options.expires=='number'||options.expires.toUTCString)){var date;if(typeof options.expires=='number'){date=new Date();date.setTime(date.getTime()+(options.expires*24*60*60*1000));}else{date=options.expires;}expires='; expires='+date.toUTCString();}var path=options.path?'; path='+(options.path):'';var domain=options.domain?'; domain='+(options.domain):'';var secure=options.secure?'; secure':'';document.cookie=[name,'=',encodeURIComponent(value),expires,path,domain,secure].join('');}else{var cookieValue=null;if(document.cookie&&document.cookie!=''){var cookies=document.cookie.split(';');for(var i=0;i<cookies.length;i++){var cookie=jQuery.trim(cookies[i]);if(cookie.substring(0,name.length+1)==(name+'=')){cookieValue=decodeURIComponent(cookie.substring(name.length+1));break;}}}return cookieValue;}};
+(function (globals) {
+    'use strict';
+
+    function FloatingElement(element, tolerance) {
+        this.init = this.init.bind(this);
+        this.refresh = this.refresh.bind(this);
+        this.updateRect = this.updateRect.bind(this);
+        this.updateSlots = this.updateSlots.bind(this);
+        this.updateFloatingProperties = this.updateFloatingProperties.bind(this);
+
+        this.element = element;
+        this.tolerance = tolerance || 200;
+        this.updateRect();
+    }
+
+    FloatingElement.prototype.updateRect = function () {
+        var rect = this.element.getBoundingClientRect();
+        this.top = window.pageYOffset + rect.top;
+        this.left = rect.left;
+        this.width = rect.width;
+    };
+
+    FloatingElement.prototype.updateSlots = function () {
+        var slots = [].slice.call(this.element.querySelectorAll('*[id^="ad_"]'));
+        var slotIDs = [];
+        slots.forEach(function (slot) {
+            var id = slot.id.slice(3);
+            slotIDs.push(id);
+        });
+        this.slotIDs = slotIDs;
+    };
+
+
+    FloatingElement.prototype.updateFloatingProperties = function (currentScrollPos) {
+        if (currentScrollPos === undefined) {
+            currentScrollPos = window.pageYOffset;
+        }
+        var slotHeight = this.element.offsetHeight;
+        var slotPositionTop = this.top - this.tolerance;
+        var slotPaddingTop = 15;
+        var parentElementHeight = this.element.parentElement.offsetHeight;
+        var childrenHeight = 0;
+        $(this.element).children().each(function(child) {
+            childrenHeight = childrenHeight + child.offsetHeight;
+        });
+        if (childrenHeight > slotHeight - this.tolerance) {
+            return;
+        }
+
+        var searchContainer = document.getElementById("header");
+        var bodyPaddingTop = searchContainer != null ? searchContainer.offsetHeight : 0;
+
+        var minTop = bodyPaddingTop + slotPaddingTop;
+        var maxTop = minTop + parentElementHeight - slotHeight - currentScrollPos + this.tolerance;
+
+        // too high
+        if (slotPositionTop < minTop)
+            slotPositionTop = minTop;
+
+        // too low
+        if (slotPositionTop > maxTop)
+            slotPositionTop = maxTop;
+
+        this.element.style.position = "fixed";
+        this.element.style.top = slotPositionTop + "px";
+        this.element.style.left = this.left + "px";
+        this.element.style.width = this.width + "px";
+        this.element.style.bottom = "auto";
+    };
+
+    FloatingElement.prototype.refresh = function () {
+        if ($ && $.cookie && iaw.hasSeltestCookie()) return;
+        if (globals.curResolution == "mobile" || iaw.isMobileMode()) return;
+
+        var currentScrollPos = window.pageYOffset;
+
+        if (currentScrollPos > this.tolerance) {
+            this.updateFloatingProperties(currentScrollPos);
+        } else {
+            this.element.setAttribute("style", "");
+        }
+    };
+
+    FloatingElement.prototype.init = function () {
+        if (globals.curResolution == "mobile" || iaw.isMobileMode()) return;
+        var oThis = this;
+        oThis.updateSlots();
+        oThis.refresh();
+
+        window.addEventListener("resize", function() {
+            oThis.element.setAttribute("style", "");
+            oThis.updateRect();
+            oThis.element.style.position = "fixed";
+            oThis.refresh();
+        }.bind(oThis));
+        window.addEventListener("scroll", this.refresh);
+
+        document.querySelector('button.header-search-icon').addEventListener("click", function() {
+            setTimeout(function(){
+                oThis.element.setAttribute("style", "");
+                oThis.updateRect();
+                oThis.element.style.position = "fixed";
+                oThis.refresh();
+            }, 300);
+        }.bind(oThis));
+    };
+
+    window.addEventListener("load", function () {
+        var floatingElements = [].slice.call(document.getElementsByClassName("floating"));
+        floatingElements.forEach(function (element) {
+            var floating = new FloatingElement(element);
+            floating.init();
+            floating.refresh();
+        });
+    });
+})(window);
+/**
+ * Autocompleter jQuery plugin - autocompletion plugin for jQuery
+ * Copyright (C) 2009 Emmanuel Surleau
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *
+ * Email: emmanuel.surleau@gmail.com
+ */
+
+// See included README for details on how to use it
+
+jQuery.fn.autoCompleter = function (url, options) {
+    if (options == null && url == null)
+        throwError("No options and no URL specified");
+    if (options == null) {
+        if (typeof url == "string" || url instanceof String)
+            options = { url: url };
+        else
+            options = url;
+    }
+    else {
+        options.url = url;
+    }
+    var $input = jQuery(this);
+    $input.attr("autocomplete", "off"); // don't want the browser to try and auto complete
+
+    // cache is not stored in a single autocompleter - in theory, we might have
+    // several autocompleters plugged to the same URL - in this case, it's
+    // smarter to share the result of the queries
+    var cache = {};
+    var cacheSize = 0;
+    var reqId = 0;
+
+    var settings = jQuery.extend({
+        rows: 10, // number of rows to display
+        resultKey: "results", // name of the key in the JSON result
+        autoWidth: true,  // autocompute width based on the input tag (otherwise rely on CSS)
+        autoPosition: true, // autocompute position based on the input tag (otherwise rely on CSS)
+        rowHash: false, // JSON results are { display: "something to display", value : "something else to insert in the input box" }
+        method: "GET", // method to do the AJAX request
+        delay: 100, // delay in ms between invocation of the autocomplete
+        minChars: 1, // minimum number of characters to have in order to trigger the autocomplete
+        debugLevel: 0, // verbosity of the debug code (works only in FF but doesn't break in IE - from 0 (no output) to 3 (maximum verbosity)
+        maxQueriesToCache: 5, // hide five queries
+        autoCompleterKey: "autocompleter.self", // key used in the input's data hash to store its associated autocompleter object
+        originalValueKey: "autocompleter.originalValue", // key used in the jquery hash to remember the input's original value
+        rowValueKey: "autocompleter.rowValue", // key used to store the real value of a row
+        inputFilterCallback: null, // callback to filter the input value before making the query
+        queryCallback: null, // query to do the callback
+        confirmSuggestionCallback: null, // callback after a suggestion is confirmed
+        resultsFilterCallback: null, // callback to filter the AJAX result hash
+        createResultRowCallback: null, // callback to create a row to add to the autocomplete popup
+        extraWidthEm: 0,  // extra value (in em) to be added after autoWidth calculation
+        extraTopEm: 0,  // extra value (in em) to be added after autoPosition calculation
+    }, options);
+
+    // "Global" functions
+    function throwError(text) {
+        throw "Error in the jQuery AutoCompleter plugin: " + text;
+    }
+    function debug1(text) {
+        if (settings.debugLevel >= 1 && window.console)
+            window.console.debug("jQuery AutoCompleter debug: ", text);
+    }
+    function debug2(text) {
+        if (settings.debugLevel >= 2 && window.console)
+            window.console.debug("jQuery AutoCompleter debug: ", text);
+    }
+    function debug3(text) {
+        if (settings.debugLevel >= 3 && window.console)
+            window.console.debug("jQuery AutoCompleter debug: ", text);
+    }
+    function em(input) {
+        var emSize = parseFloat($("body").css("font-size"));
+        return (emSize * input);
+    }
+
+    // Generates an autocompleter if needed
+    function getAutoCompleter($input) {
+        var key = settings.autoCompleterKey;
+        if (!$input.data(key))
+            $input.data(key, new AutoCompleter(settings, $input));
+        return $input.data(key);
+    }
+
+    // Handles an autocomplete session
+    function AutoCompleter(settings, $container) {
+        this.init(settings, $container);
+    }
+
+    // Constructor
+    AutoCompleter.prototype.init = function (settings, $container) {
+        this.settings = settings;
+        this.$container = $container;
+        this.$input = $container.find(".search-input");
+        this.$popup = $container.find(".autocompleter");
+    };
+
+    // Handles non-movement key processing
+    AutoCompleter.prototype.processKey = function (e) {
+        debug3("Received keypress event with code " + e.which);
+        var isPopupVisible = this.isPopupVisible();
+        if (isPopupVisible)
+            this.$selectedRow = this.getSelectedRow();
+        switch (e.which) {
+            case 40: // down
+            case 38: // up
+            case 39: // right
+            case 37: // left
+                break; // catch it in processMovementKeys
+            case 13: // enter
+                if (isPopupVisible) {
+                    //this.strangleEvent(e); // Hardcore patch, just lets enter resolve so we submit the form
+                    this.confirmSuggestion();
+                }
+                break;
+            case 27: //	escape
+                this.killPopup();
+                break;
+            case 8: // backspace
+                this.killPopup();
+                this.delayedAutoComplete();
+                break;
+            default:
+                this.isChanged = false;//Check
+                this.delayedAutoComplete();
+                break;
+        }
+    };
+
+    // Separate function, just to handle movement keys (due to problems in IE and
+    // webkit-based browsers)
+    AutoCompleter.prototype.processMovementKey = function (e) {
+        debug3("Received keydown event with code " + e.which);
+        var isPopupVisible = this.isPopupVisible();
+        if (isPopupVisible)
+            this.$selectedRow = this.getSelectedRow();
+        switch (e.which) {
+            case 40: // down
+                if (isPopupVisible) {
+                    this.strangleEvent(e);
+                    if (!this.nextSuggestion())
+                        this.rollback();
+                }
+                else
+                    this.delayedAutoComplete();
+                break;
+            case 38: // up
+                if (isPopupVisible) {
+                    this.strangleEvent(e);
+                    if (!this.previousSuggestion())
+                        this.rollback();
+                }
+                break;
+            case 39: // right
+                if (isPopupVisible) {
+                    this.strangleEvent(e);
+                    this.confirmSuggestion();
+                }
+                break;
+            case 37: // left arrow
+                this.killPopup();
+                break;
+        }
+    };
+
+    // Strangles the event (prevents it from propagating)
+    AutoCompleter.prototype.strangleEvent = function (e) {
+        if (e.preventDefault) e.preventDefault();
+        if (e.stopPropagation) e.stopPropagation();
+    };
+
+    // Retrieves the currently selected row, if any
+    AutoCompleter.prototype.getSelectedRow = function () {
+        var $selectedRows = this.$popup.find(".selected");
+        return $selectedRows.length > 0 ? $selectedRows.eq(0) : null;
+    };
+
+    // Select the next suggestion in the popup
+    AutoCompleter.prototype.nextSuggestion = function () {
+        debug2("Selecting next suggestion");
+        var newSelectedRows = this.$selectedRow != null ?
+            this.$selectedRow.next() : // select the row followig the current one
+            this.$popup.children(); // select the first row
+        var newSelectedRow = newSelectedRows.length > 0 ?
+            newSelectedRows.eq(0) :
+            null;
+        this.selectRow(newSelectedRow);
+        return (newSelectedRow != null);
+    };
+
+    // Select the previous suggestion in the popup
+    AutoCompleter.prototype.previousSuggestion = function () {
+        debug2("Selecting previous suggestion");
+        var newSelectedRows = this.$selectedRow != null ?
+            this.$selectedRow.prev() : // select the row preceding the current one
+            this.$popup.children(); // select the last row
+        var newSelectedRow = newSelectedRows.length > 0 ?
+            newSelectedRows.eq(newSelectedRows.length - 1) :
+            null;
+        this.selectRow(newSelectedRow);
+        return (newSelectedRow != null);
+    };
+
+    // Select a new row, if any
+    AutoCompleter.prototype.selectRow = function ($row) {
+        this.$popup.find(".selected").removeClass("selected");
+        this.$selectedRow = $row;
+        if ($row != null) {
+            debug3("Selected row: " + $row);
+            $row.addClass("selected");
+            var rowOffset = 0;
+            $row.prevAll().each(function () { rowOffset += $(this).height(); });
+            // check if the newly selected row is visible
+            if ((rowOffset >= (this.$popup.innerHeight() + this.$popup.scrollTop())) ||
+                (rowOffset < this.$popup.scrollTop()))
+                this.$popup.scrollTop(rowOffset);
+
+            var key = this.settings.originalValueKey;
+            var originalValue = this.$input.data(key);
+            if (!originalValue)
+                this.$input.data(key, this.$input.val());
+            var value = null;
+            if (this.settings.rowValueKey)
+                value = $row.data(this.settings.rowValueKey);
+            if (value == null)
+                value = $row.text();
+            this.$input.val(value);
+            this.isChanged = true;
+        }
+        else {
+            debug3("Selected null row");
+        }
+    };
+
+    // Returns the original value of the input box, before the popup was displayed
+    AutoCompleter.prototype.originalValue = function () {
+        return this.$input.data(this.settings.originalValueKey);
+    };
+
+    // Revert to original value
+    AutoCompleter.prototype.rollback = function () {
+        if (this.isInputTestChanged()) {
+            var originalValue = this.originalValue();
+            this.$input.val(originalValue);
+        }
+    };
+
+    AutoCompleter.prototype.isInputTestChanged = function () {
+        return this.isChanged;
+    };
+    // Closes the popup and rolls back the changes
+    AutoCompleter.prototype.killPopup = function () {
+        if (this.isPopupVisible()) {
+            this.rollback(); // restore original content
+            this.$input.removeData(this.settings.originalValueKey);
+            this.hidePopup();
+        }
+    };
+
+    // User has selected an item
+    AutoCompleter.prototype.confirmSuggestion = function () {
+        if (this.$selectedRow != null) {
+            this.isChanged = false; //This is now the new default Input value.
+            this.$input.removeData(this.settings.originalValueKey);
+            this.hidePopup();
+        }
+        else {
+            this.killPopup();
+        }
+        if (this.settings.confirmSuggestionCallback && this.$input.val()) {
+            debug1("Triggering confirmSuggestionCallback");
+            this.settings.confirmSuggestionCallback.call(this);
+        }
+    };
+
+
+    // Returns true or false depending on whether the autocomplete popup is
+    // visible
+    AutoCompleter.prototype.isPopupVisible = function () {
+        return this.$popup.is(":visible");
+    };
+
+    // Starts the autocomplete with a delay if one has been set
+    AutoCompleter.prototype.delayedAutoComplete = function () {
+        var delay = this.settings.delay;
+        if (delay) {
+            var me = this;
+            reqId++;
+            var pReqId = reqId;
+            setTimeout(function () { me.autoComplete(pReqId); }, delay);
+        }
+    };
+
+    // Utility function to return the caret position in the input field
+    //  Borrowed from http://www.webdeveloper.com/forum/showthread.php?t=74982
+    AutoCompleter.prototype.caretPosition = function () {
+        // Initialize
+        var iCaretPos = 0;
+        var oField = this.$input.get(0);
+        // IE Support
+        if (document.selection) {
+
+            // Set focus on the element
+            oField.focus();
+
+            // To get cursor position, get empty selection range
+            var oSel = document.selection.createRange();
+
+            // Move selection start to 0 position
+            oSel.moveStart('character', -oField.value.length);
+
+            // The caret position is selection length
+            iCaretPos = oSel.text.length;
+        }
+        // Firefox support
+        else if (oField.selectionStart || oField.selectionStart == '0')
+            iCaretPos = oField.selectionStart;
+
+        // Return results
+        return iCaretPos;
+    };
+
+    // Main action
+    AutoCompleter.prototype.autoComplete = function (pReqId) {
+
+        if (reqId != pReqId) {
+            return;
+        }
+        var criterion = this.$input.val();
+        criterion = criterion.replace(/[\u2019\u02BC\u2032\uFF07]|&apos;/g, "'");
+
+        //Save the criterion for restoring it later
+        this.$input.data(this.settings.originalValueKey, criterion);
+
+        // apply filter function, if any
+        if (this.settings.inputFilterCallback)
+            criterion = this.settings.inputFilterCallback.call(this, criterion);
+        if (!criterion)
+            return;
+        // Not enough characters in the input, move along
+        if (this.settings.minChars && criterion.length < this.settings.minChars) {
+            debug2("Not enough characters to start the autocompletion");
+            return;
+        }
+        var me = this;
+
+        if (cache[criterion]) {
+            var resultsHash = me.cache(criterion);
+            me.handleQueryResults(resultsHash);
+        }
+        // no cache
+        else {
+            var callback = function (results) {
+                me.cache(criterion, results);
+                me.handleQueryResults(results);
+            };
+            if (this.settings.queryCallback) {
+                debug1("Triggering queryCallback");
+                this.settings.queryCallback.call(this, callback);
+            }
+            else {
+                var url = this.settings.url;
+                if (!url)
+                    throwError("No url specified and no queryCallback");
+                var method = this.settings.method;
+                var params = {
+                    q: criterion,
+                    contentType: 'application/json; charset=utf-8'
+                };
+                debug1("Triggering AJAX call with method " + method + " to URL " + url + " with parameter q=" + criterion);
+                if (method == 'POST')
+                    jQuery.post(url, params, callback, "json");
+                else jQuery.getJSON(url, params, callback);
+            }
+        }
+    };
+
+    AutoCompleter.prototype.cache = function (criterion, resultsHash) {
+        // we want to retrieve the results
+        if (resultsHash == null) {
+            var resultsData = cache[criterion];
+            if (resultsData) {
+                // update last access date
+                resultsData.lastAccess = new Date().getTime();
+                return resultsData.results;
+            }
+            else {
+                return null;
+            }
+        }
+        // we want to store them
+        else {
+            if (cacheSize >= this.maxQueriesToCache) {
+                // oups, we're exceeding our allowance, discard the oldest query
+                var oldestTime = new Date().getTime();
+                var oldestCrit = null;
+                var accessTime;
+                for (var key in cache) {
+                    accessTime = cache[key].latestAccess;
+                    if (accessTime < oldestTime) {
+                        oldestCrit = key;
+                        oldestTime = accessTime;
+                    }
+                }
+                delete cache[oldestCrit];
+                cacheSize--;
+            }
+            // actually store in cache
+            cache[criterion] = {
+                results: resultsHash,
+                lastAccess: new Date().getTime()
+            };
+            cacheSize++;
+        }
+    };
+
+    // Handles the JSON results
+    AutoCompleter.prototype.handleQueryResults = function (resultsHash) {
+        debug2("Received following data: ");
+        debug2(resultsHash);
+        if (!(resultsHash instanceof Object))
+            throwError("The data received is not a hash");
+        var results = null;
+        if (this.settings.resultsFilterCallback) {
+            results = this.settings.resultsFilterCallback.call(this, resultsHash);
+        }
+        else {
+            var key = this.settings.resultKey;
+            results = resultsHash[key];
+            if (results == null)
+                throwError("The result hash didn't contain the results key " + key);
+        }
+        if (results.length > 0) {
+            var me = this;
+            var callback = this.settings.createResultRowCallback ?
+                (function (i, val) {
+                    return me.settings.createResultRowCallback.call(me, i, val.searchtext);
+                }) :
+                (function (i, val) {
+                    return me.createResultRow(val.searchtext);
+                });
+            this.$popup.empty();
+            // Create rows and append them to the popup
+            var maxRowCount = Math.min(this.settings.rows, (results.length - 1));
+            me.$popup.css("height", "");
+            // Add this to the height of the popup to accomodate IE
+            var borderWidth = jQuery.browser && jQuery.browser.msie ?
+                (this.$popup.outerHeight() - this.$popup.innerHeight()) :
+                0;
+            jQuery.each(results, function (i, val) {
+                var display = me.settings.rowHash ? val.display : val;
+                var value = me.settings.rowHash ? val.value : val;
+                var row = callback(i, display);
+                debug3("Created from val " + value + " :row =" + row);
+                if (row) {
+                    var $row = $(row);
+                    if (me.settings.rowHash)
+                        $row.data(me.settings.rowValueKey, value);
+                    me.$popup.append($row);
+                    if (maxRowCount != null && maxRowCount == i) {
+                        // Looks stupid, innit? But this way we can force the height,
+                        // and make sure we only display maxRowCount
+                        me.$popup.height(me.$popup.height() + borderWidth);
+                    }
+                    $row.mousedown(function (e) {
+                        me.strangleEvent(e);
+                        me.selectRow($(this));
+                        me.confirmSuggestion();
+                    });
+                }
+            });
+            this.showPopup();
+        }
+    };
+
+    // Creates a single row to display a line of result in the popup
+    AutoCompleter.prototype.createResultRow = function (val) {
+        var row = document.createElement("div");
+        row.setAttribute("class", "row");
+        //row.appendChild(document.createTextNode(val));
+        $(row).html(val);
+        return row;
+    };
+
+    AutoCompleter.prototype.showPopup = function () {
+        // same width as parent input, otherwise rely on CSS
+        var $popup = this.$popup;
+        var $searchform = this.$container.find(".search-form");
+        if (settings.autoWidth == true)
+            $popup.width($searchform.width() - 2 + em(settings.extraWidthEm)); //Minus the fugly borders
+        if (settings.autoPosition == true) {
+            var position = $searchform.position();
+            var scrolledDownExtra = $popup.parentsUntil(".scrolling-down") ? em(2) : 0;
+            $popup.css("left", "inherit");
+            $popup.css("top", em(settings.extraTopEm) - $searchform.height()); //Minus the border
+        }
+        debug3("Displaying the popup");
+        $popup.show();
+    };
+
+    AutoCompleter.prototype.hidePopup = function () {
+        this.$popup.hide();
+    };
+
+    // JQuery callback
+    return this.each(function () {
+        var $me = jQuery(this);
+
+        $me.keydown(function (e) {
+            getAutoCompleter($me).processKey(e);
+            getAutoCompleter($me).processMovementKey(e);
+        });
+
+        // Make the popup when the user clicks away
+        $me.find(".search-input").blur(function () {
+            getAutoCompleter($me).killPopup();
+        });
+    });
+};
+(function (path) {
+    $(function () {
+        var dictionary = jQuery.cookie('dictionary');
+        if (!dictionary || !dictCodes.includes(dictionary)) dictionary = "british";
+
+        $(".search-entry-form").each(function(_idx, form) {
+            form = $(form);
+            form.attr("action", "https://www.macmillandictionary.com/search/" + dictionary + "/direct/");
+            form.autoCompleter(path + dictionary + "/", {
+                minChars: 2,
+                confirmSuggestionCallback: function () {
+                    form.append("<input type='hidden' name='auto' value='complete' />");
+                    form.submit();
+                },
+                extraWidthEm: 0.8,
+                extraTopEm: -1.5,
+            });
+        });
+    });
+})("https://www.macmillandictionary.com/autocomplete/");
+(function($){ 
+	$(document).ready(function(){
+
+		$('body').append('<div id="backtotop"></div>');
+		var pxShow = $(window).height()/2;//height on which the button will show
+		var fadeInTime = 400;//how slow/fast you want the button to show
+		var fadeOutTime = 400;//how slow/fast you want the button to hide
+		var scrollSpeed = 400;//how slow/fast you want the button to scroll to top. can be a value, 'slow', 'normal' or 'fast'
+		var position = 50;
+
+		$(window).scroll(function(){
+			if($(window).scrollTop() >= pxShow){
+				$("#backtotop").fadeIn(fadeInTime);
+			}else{
+                if(position == 50 && $("#stickyslot_container").length) {
+                    position = $("#stickyslot_container").height() + 15;
+                    $("#backtotop").css("bottom", position + "px");
+                }
+				$("#backtotop").fadeOut(fadeOutTime);
+			}
+		});
+
+		$('#backtotop').click(function(e){
+			e.preventDefault();
+			$('html, body').animate({scrollTop:0}, scrollSpeed);
+		}); 
+	});
+})(this.jQuery);
+$(function () {
+    $(".audio_play_button").click(function () {
+        var src_mp3 = $(this).attr("data-src-mp3");
+        var src_ogg = $(this).attr("data-src-ogg");
+
+        if (supportAudioHtml5())
+            playHtml5(src_mp3, src_ogg);
+        else if (supportAudioFlash())
+            playFlash(src_mp3, src_ogg);
+        else
+            playRaw(src_mp3, src_ogg);
+    });
+
+    function supportAudioHtml5() {
+        var audioTag = document.createElement('audio');
+        try {
+            return (!!(audioTag.canPlayType)
+                && ((audioTag.canPlayType("audio/mpeg") != "no" && audioTag.canPlayType("audio/mpeg") != "")
+                    || (audioTag.canPlayType("audio/ogg") != "no" && audioTag.canPlayType("audio/ogg") != "")));
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function supportAudioFlash() {
+        var flashinstalled = 0;
+        var flashversion = 0;
+        if (navigator.plugins && navigator.plugins.length) {
+            x = navigator.plugins["Shockwave Flash"];
+            if (x) {
+                flashinstalled = 2;
+                if (x.description) {
+                    y = x.description;
+                    flashversion = y.charAt(y.indexOf('.') - 1);
+                }
+            }
+            else {
+                flashinstalled = 1;
+            }
+            if (navigator.plugins["Shockwave Flash 2.0"]) {
+                flashinstalled = 2;
+                flashversion = 2;
+            }
+        }
+        else if (navigator.mimeTypes && navigator.mimeTypes.length) {
+            x = navigator.mimeTypes['application/x-shockwave-flash'];
+            if (x && x.enabledPlugin)
+                flashinstalled = 2;
+            else
+                flashinstalled = 1;
+        }
+        else {
+            for (var i = 7; i > 0; i--) {
+                flashVersion = 0;
+                try {
+                    var flash = new ActiveXObject("ShockwaveFlash.ShockwaveFlash." + i);
+                    flashVersion = i;
+                    return (flashVersion > 0);
+                }
+                catch (e) { }
+            }
+        }
+        return (flashinstalled > 0);
+    }
+
+    function playHtml5(src_mp3, src_ogg) {
+        //use appropriate source
+        var audio = new Audio("");
+        if (audio.canPlayType("audio/mpeg") != "no" && audio.canPlayType("audio/mpeg") != "")
+            audio = new Audio(src_mp3);
+        else if (audio.canPlayType("audio/ogg") != "no" && audio.canPlayType("audio/ogg") != "")
+            audio = new Audio(src_ogg);
+
+        //play
+        audio.addEventListener("error", function (e) { alert("Apologies, the sound is not available."); });
+        audio.play();
+    }
+
+    function playFlash(src_mp3, src_ogg) {
+        var src_flash = "#skAssetUrl('/external/flash/speaker.swf?song_url=" + src_mp3 + "&autoplay=true')";
+        if (navigator.plugins && navigator.mimeTypes && navigator.mimeTypes.length)
+            $("body").append("<embed type='application/x-shockwave-flash' src='" + src_flash + "' width='0' height='0'></embed>");
+        else
+            $("body").append("<object type='application/x-shockwave-flash' width='0' height='0' codebase='http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,40,0' data='" + src_flash + "'><param name='wmode' value='transparent'/><param name='movie' value='" + src_flash + "'/><embed src='" + src_flash + "' width='0' height='0' ></embed></object>");
+    }
+
+
+    function playRaw(src_mp3, src_ogg) {
+        window.open(src_mp3, "Sound", "menubar=no, status=no, scrollbars=no, menubar=no, width=200, height=100");
+    }
+});var dictCodes = "[british, american]".slice(1,-1).split(", ");
+$(function () {
+    var dictionary = jQuery.cookie('dictionary');
+    if (!dictionary || !dictCodes.includes(dictionary)) dictionary = "british";
+
+    //set combobox values
+    $('#dictionary').val(dictionary);
+
+    $(".moreButton").click(function () {
+        var word = $(this).attr("data-word");
+        sendGaEvent('entry', 'more', word);
+    });
+});
+
+if (location.hash) {
+    // scrollToAnchor() to be called by the ad rendered event, or after a delay (in case the user has an adblocker)
+    var scrollToAnchorCalled = false;
+    var lastContentHeight = getContentHeight();
+
+    $(window).on("load", function () {
+        setTimeout(function () {
+            scrollToAnchor();
+        }, 1700);
+    });
+}
+
+function getContentHeight() {
+    return $("#body").height();
+}
+
+function checkContentChange() {
+    var contentHeight = getContentHeight();
+    if(lastContentHeight != contentHeight) {
+        lastContentHeight = contentHeight;
+        setTimeout(function () {
+            scrollToAnchor();
+        }, 500);
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+function scrollToAnchor() {
+    if(scrollToAnchorCalled == true || location.hash == "")
+        return;
+
+    if(checkContentChange() == false) {
+        scrollToAnchorCalled = true;
+        var top = $(location.hash).offset().top;
+        $("html, body").animate({ scrollTop: top }, 500);
+    }
+}$(function () {
+    var header = $("#header");
+    var searchContainer = $("#body .search-entry-form");
+    var headerMainLinks = header.find(".header-main-links");
+    var headerTopLinks = header.find(".header-top-links");
+    var floatingSearch = header.find(".floating-search").first();
+    var floatingSearchInput = floatingSearch.find(".search-input").first();
+    var floatingSearchPopup = floatingSearch.find(".autocompleter").first();
+    var bodySearchInput = searchContainer.find(".search-input").first();
+    var bodySearchPopup = searchContainer.find(".autocompleter").first();
+
+    var mobileNavButton = $(".icon-menu");
+    var mobileNav = header.find(".mobile-nav").first();
+
+    var headerMainLinksHeight = headerMainLinks.height();
+    var headerTopLinksHeight = headerTopLinks.height();
+    var searchContainerHeight = searchContainer.height();
+    var searchContainerPos = searchContainer.offset().top;
+
+    var searchMidHeight = searchContainerPos - headerMainLinksHeight + (searchContainerHeight / 2);
+
+    var lastScrollPos = 0;
+    var scrollingDown = false;
+    var aboveSearch = false;
+
+    bodySearchInput.focus();
+
+    $(window).scroll(function (e) {
+        e.preventDefault();
+        var currScrollPos = window.pageYOffset;
+        scrollingDown = (currScrollPos >= lastScrollPos && currScrollPos > headerMainLinksHeight);
+        var searchThreshold = searchMidHeight;
+
+        if (scrollingDown) {
+            header.addClass("scrolling-down");
+        } else {
+            header.removeClass("scrolling-down");
+            searchThreshold = searchThreshold - headerTopLinksHeight;
+        }
+
+        aboveSearch = currScrollPos > searchThreshold;
+        if (aboveSearch) {
+            header.addClass("above-search");
+        } else {
+            header.removeClass("above-search");
+            if (floatingSearchInput.is(":focus")) {
+                bodySearchInput.val(floatingSearchInput.val());
+                bodySearchPopup.hide();
+                bodySearchInput.focus();
+            }
+            floatingSearch.addClass("invisible");
+        }
+
+        lastScrollPos = currScrollPos;
+        floatingSearchPopup.hide();
+    });
+
+    $(".header-search-icon").click(function () {
+        mobileNav.addClass("invisible");
+        if (floatingSearch.hasClass("invisible")) {
+            if (aboveSearch) {
+                floatingSearch.removeClass("invisible");
+                floatingSearchInput.val(bodySearchInput.val());
+                floatingSearchInput.focus();
+            } else {
+                bodySearchInput.focus();
+            }
+        } else {
+            bodySearchInput.val(floatingSearchInput.val());
+            floatingSearch.addClass("invisible");
+        }
+        return false;
+    });
+
+    $(document).on('click', function (e) {
+        if ($(e.target).closest('.floating-search').length === 0 && !floatingSearch.hasClass('invisible')) {
+            bodySearchInput.val(floatingSearchInput.val());
+            floatingSearch.addClass("invisible");
+        }
+        if ($(e.target).closest('.mobile-nav').length === 0 && !mobileNav.hasClass('invisible')) {
+            mobileNav.addClass("invisible");
+        }
+    });
+
+    $(document).on('keydown', function (e) {
+        if (e.keyCode === 27) { // ESC
+            if (!floatingSearch.hasClass("invisible")) {
+                bodySearchInput.val(floatingSearchInput.val());
+                floatingSearch.addClass("invisible");
+            }
+            mobileNav.addClass("invisible");
+        }
+    });
+
+    mobileNavButton.click(function () {
+        floatingSearch.addClass("invisible");
+        if (mobileNav.hasClass("invisible")) {
+            mobileNav.removeClass("invisible");
+        } else {
+            mobileNav.addClass("invisible");
+        }
+        return false;
+    });
+});

@@ -1,0 +1,5 @@
+(function(){
+function run(n,t,i){var a=new XMLHttpRequest;a.onreadystatechange=function(){if(this.readyState===4&&this.status===200){var t=n.createElement("script");t.type="text/javascript";t.innerHTML="(function() { var load = function() {"+a.responseText+";\n return this;}.bind({}); var _ = load();__CMD__ })()".replace(/__CMD__/g,i);(n.head||n.documentElement).appendChild(t)}};a.onerror=function(){};a.open("GET",t,!0);a.send()}
+function add(t,n){var i=t.createElement("script");i.type="text/javascript";i.src=n;i.async=!0;(t.head||t.documentElement).appendChild(i)}
+run(document, 'https://cdn.pbstck.com/index-monitoring-04822ac.js', '_.monitoring.pubstackAutoconfig(' + JSON.stringify({"endpoint":{"script":"https://cdn.pbstck.com/index-monitoring-04822ac.js","gateway":"https://intake.pbstck.com/v1/intake"},"scopeId":"fa44a47f-d6c8-4234-92e6-61424a783b67","tagId":"03a21570-ec19-43c5-a55a-652c0ee22d78","viewabilityEnabled":true,"refreshEnabled":false,"pbjsVariableName":"pbjs","bootstrapTime":1640891851206,"bootstrapVersion":"undefined","device":"desktop","browserName":"Chrome","browserVersion":"96","osName":"Windows","osVersion":"10","country":"IN"}) + ');');
+})()
